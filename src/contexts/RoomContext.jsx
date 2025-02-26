@@ -29,20 +29,29 @@ export const RoomProvider = ({ children }) => {
 
   const createRoom = () => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const participant = {
+      id: `user-${Math.random().toString(36).substr(2, 9)}`,
+      joinedAt: new Date().toISOString()
+    };
     setRoom({
       code,
       createdAt: new Date().toISOString(),
       isActive: true,
     });
+    setParticipants([participant]);
+    socket.emit('join_room', { roomCode: code, participant });
     return code;
   };
 
   const joinRoom = (code, participant) => {
-    if (room?.code === code) {
-      socket.emit('join_room', { roomCode: code, participant });
-      return true;
-    }
-    return false;
+    setRoom({
+      code,
+      createdAt: new Date().toISOString(),
+      isActive: true,
+    });
+    setParticipants([participant]);
+    socket.emit('join_room', { roomCode: code, participant });
+    return true;
   };
 
   const leaveRoom = (participantId) => {

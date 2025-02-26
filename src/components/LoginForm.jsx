@@ -8,10 +8,13 @@ import {
   Alert,
 } from "@mui/material";
 import { useState } from "react";
+import { useRoom } from "../contexts/RoomContext";
 
 const LoginForm = ({ onLogin }) => {
   const [roomCode, setRoomCode] = useState("");
   const [error, setError] = useState("");
+
+  const { joinRoom } = useRoom();
 
   const handleRoomCodeSubmit = async () => {
     if (roomCode.trim()) {
@@ -26,6 +29,11 @@ const LoginForm = ({ onLogin }) => {
 
         const data = await response.json();
         if (data.exists) {
+          const participant = {
+            id: `user-${Math.random().toString(36).substr(2, 9)}`,
+            joinedAt: new Date().toISOString()
+          };
+          joinRoom(roomCode.trim(), participant);
           setError("");
           onLogin();
         } else {
