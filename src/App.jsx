@@ -5,13 +5,16 @@ import Layout from "./components/Layout";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [initialTab, setInitialTab] = useState("home");
 
-  const handleLogin = () => {
+  const handleLogin = (tab = "home") => {
+    setInitialTab(tab);
     setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
     setIsAuthenticated(false);
+    setInitialTab("home");
   };
 
   return (
@@ -19,7 +22,7 @@ function App() {
       {!isAuthenticated ? (
         <LoginForm onLogin={handleLogin} />
       ) : (
-        <Layout onLogout={handleLogout} />
+        <Layout onLogout={handleLogout} initialTab={initialTab} />
       )}
     </div>
   );

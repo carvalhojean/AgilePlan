@@ -6,37 +6,32 @@ import {
   Paper,
   TextField,
 } from "@mui/material";
-import {
-  GitHub as GitHubIcon,
-  Google as GoogleIcon,
-} from "@mui/icons-material";
+import { useState } from "react";
 
 const LoginForm = ({ onLogin }) => {
-  const handleGithubLogin = () => {
-    // TODO: Implement GitHub login
-    console.log("GitHub login clicked");
-    onLogin();
-  };
-
-  const handleGoogleLogin = () => {
-    // TODO: Implement Google login
-    console.log("Google login clicked");
-    onLogin();
-  };
+  const [roomCode, setRoomCode] = useState("");
 
   const handleRoomCodeSubmit = () => {
-    // TODO: Implement room code submission
-    console.log("Room code submitted");
+    if (roomCode.trim()) {
+      onLogin();
+    }
+  };
+
+  const handleCreateRoom = () => {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    setRoomCode(code);
+    onLogin("planning-poker");
   };
 
   return (
     <Container maxWidth="sm">
       <Box
         sx={{
-          marginTop: 8,
+          minHeight: "100vh",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
+          justifyContent: "center",
         }}
       >
         <Paper
@@ -53,7 +48,7 @@ const LoginForm = ({ onLogin }) => {
             Welcome to your Agile Plan
           </Typography>
           <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-            Sign in with your social account
+            Enter your room code to continue
           </Typography>
           <Box
             sx={{
@@ -63,44 +58,19 @@ const LoginForm = ({ onLogin }) => {
               flexDirection: "column",
             }}
           >
-            <Button
-              fullWidth
-              variant="contained"
-              startIcon={<GitHubIcon />}
-              onClick={handleGithubLogin}
-              sx={{
-                backgroundColor: "#24292e",
-                "&:hover": {
-                  backgroundColor: "#2c3238",
-                },
-              }}
-            >
-              Continue with GitHub
-            </Button>
-            <Button
-              fullWidth
-              variant="contained"
-              startIcon={<GoogleIcon />}
-              onClick={handleGoogleLogin}
-              sx={{
-                backgroundColor: "#4285f4",
-                "&:hover": {
-                  backgroundColor: "#357ae8",
-                },
-              }}
-            >
-              Continue with Google
-            </Button>
-            <Box sx={{ mt: 3, pt: 3, borderTop: 1, borderColor: "divider" }}>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Don't want to log in and have a room code? Enter it in the field
-                below
-              </Typography>
-              <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Box sx={{ display: "flex", gap: 1 }}>
                 <TextField
                   size="small"
                   placeholder="Enter room code"
                   fullWidth
+                  value={roomCode}
+                  onChange={(e) => setRoomCode(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === "Enter") {
+                      handleRoomCodeSubmit();
+                    }
+                  }}
                 />
                 <Button
                   variant="contained"
@@ -108,6 +78,25 @@ const LoginForm = ({ onLogin }) => {
                   sx={{ minWidth: "100px" }}
                 >
                   Enter
+                </Button>
+              </Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: 1,
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  or, create a new one
+                </Typography>
+                <Button
+                  variant="outlined"
+                  onClick={handleCreateRoom}
+                  sx={{ minWidth: "120px" }}
+                >
+                  Create
                 </Button>
               </Box>
             </Box>

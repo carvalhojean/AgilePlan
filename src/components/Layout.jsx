@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -26,10 +26,14 @@ import {
 import VotingScreen from "./VotingScreen";
 import HomeScreen from "./HomeScreen";
 
-const Layout = ({ onLogout }) => {
-  const [currentTab, setCurrentTab] = useState("home");
+const Layout = ({ onLogout, initialTab }) => {
+  const [currentTab, setCurrentTab] = useState(initialTab || "home");
   const theme = useTheme();
   const [anchorEl, setAnchorEl] = useState(null);
+
+  useEffect(() => {
+    setCurrentTab(initialTab || "home");
+  }, [initialTab]);
 
   const handleProfileClick = (event) => {
     setAnchorEl(event.currentTarget);
