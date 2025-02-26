@@ -16,6 +16,18 @@ const REDIS_URL = "redis://default:p9bR9clD3v34i0BA33oDIZY5NM7LokeY@redis-17752.
 const redis = new Redis(REDIS_URL);
 const redisSubscriber = new Redis(REDIS_URL);
 
+app.use(express.json());
+
+app.post('/api/check-room', async (req, res) => {
+  const { roomCode } = req.body;
+  try {
+    const roomExists = await redis.exists(`room:${roomCode}`);
+    res.json({ exists: roomExists === 1 });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to check room existence' });
+  }
+});
+
 redisSubscriber.subscribe('room-events');
 
 redisSubscriber.on('message', (channel, message) => {
@@ -26,6 +38,7 @@ redisSubscriber.on('message', (channel, message) => {
 io.on('connection', (socket) => {
   socket.on('join_room', ({ roomCode, participant }) => {
     socket.join(roomCode);
+    redis.set(`room:${roomCode}`, 'active');
     redis.publish('room-events', JSON.stringify({
       type: 'participant_joined',
       roomCode,

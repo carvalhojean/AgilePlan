@@ -5,21 +5,42 @@ import {
   Typography,
   Paper,
   TextField,
+  Alert,
 } from "@mui/material";
 import { useState } from "react";
 
 const LoginForm = ({ onLogin }) => {
   const [roomCode, setRoomCode] = useState("");
+  const [error, setError] = useState("");
 
-  const handleRoomCodeSubmit = () => {
+  const handleRoomCodeSubmit = async () => {
     if (roomCode.trim()) {
-      onLogin();
+      try {
+        const response = await fetch('http://localhost:3001/api/check-room', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ roomCode: roomCode.trim() }),
+        });
+
+        const data = await response.json();
+        if (data.exists) {
+          setError("");
+          onLogin();
+        } else {
+          setError("This room does not exist.");
+        }
+      } catch (err) {
+        setError("Failed to verify room. Please try again.");
+      }
     }
   };
 
   const handleCreateRoom = () => {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     setRoomCode(code);
+    setError("");
     onLogin("planning-poker");
   };
 
@@ -65,12 +86,16 @@ const LoginForm = ({ onLogin }) => {
                   placeholder="Enter room code"
                   fullWidth
                   value={roomCode}
-                  onChange={(e) => setRoomCode(e.target.value)}
+                  onChange={(e) => {
+                    setRoomCode(e.target.value);
+                    setError("");
+                  }}
                   onKeyPress={(e) => {
                     if (e.key === "Enter") {
                       handleRoomCodeSubmit();
                     }
                   }}
+                  error={!!error}
                 />
                 <Button
                   variant="contained"
@@ -80,6 +105,11 @@ const LoginForm = ({ onLogin }) => {
                   Enter
                 </Button>
               </Box>
+              {error && (
+                <Alert severity="error" sx={{ width: "100%" }}>
+                  {error}
+                </Alert>
+              )}
               <Box
                 sx={{
                   display: "flex",
