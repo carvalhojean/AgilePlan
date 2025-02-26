@@ -48,7 +48,7 @@ const VotingScreen = () => {
           justifyContent: "center",
           alignItems: "center",
           minHeight: "100vh",
-          width: "100%"
+          width: "100%",
         }}
       >
         <Button

@@ -46,7 +46,11 @@ const Layout = ({ onLogout }) => {
 
   const topMenuItems = [
     { id: "home", label: "Home", icon: <HomeIcon /> },
-    { id: "planning-poker", label: "Planning Poker", icon: <PlanningPokerIcon /> },
+    {
+      id: "planning-poker",
+      label: "Planning Poker",
+      icon: <PlanningPokerIcon />,
+    },
   ];
 
   const bottomMenuItems = [
@@ -114,7 +118,9 @@ const Layout = ({ onLogout }) => {
           ))}
         </List>
 
-        <List sx={{ mt: "auto", borderTop: "1px solid rgba(255, 255, 255, 0.12)" }}>
+        <List
+          sx={{ mt: "auto", borderTop: "1px solid rgba(255, 255, 255, 0.12)" }}
+        >
           {bottomMenuItems.map((item) => (
             <ListItem
               button

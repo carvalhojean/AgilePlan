@@ -1,7 +1,7 @@
-import { useState } from 'react'
-import './App.css'
-import LoginForm from './components/LoginForm'
-import Layout from './components/Layout'
+import { useState } from "react";
+import "./App.css";
+import LoginForm from "./components/LoginForm";
+import Layout from "./components/Layout";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -22,7 +22,7 @@ function App() {
         <Layout onLogout={handleLogout} />
       )}
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
