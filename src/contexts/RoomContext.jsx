@@ -51,6 +51,13 @@ export const RoomProvider = ({ children }) => {
     });
     setParticipants([participant]);
     socket.emit('join_room', { roomCode: code, participant });
+    
+    socket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
+      setRoom(null);
+      setParticipants([]);
+    });
+    
     return true;
   };
 
@@ -122,6 +129,10 @@ export const RoomProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    socket.on("room_state", ({ participants: roomParticipants }) => {
+      setParticipants(roomParticipants);
+    });
+
     socket.on("participant_joined", (participant) => {
       setParticipants((prev) => [...prev, participant]);
     });
