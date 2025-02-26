@@ -2,6 +2,7 @@ import { useState } from "react";
 import "./App.css";
 import LoginForm from "./components/LoginForm";
 import Layout from "./components/Layout";
+import { RoomProvider } from "./contexts/RoomContext";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -18,13 +19,15 @@ function App() {
   };
 
   return (
-    <div className="app">
-      {!isAuthenticated ? (
-        <LoginForm onLogin={handleLogin} />
-      ) : (
-        <Layout onLogout={handleLogout} initialTab={initialTab} />
-      )}
-    </div>
+    <RoomProvider>
+      <div className="app">
+        {!isAuthenticated ? (
+          <LoginForm onLogin={handleLogin} />
+        ) : (
+          <Layout onLogout={handleLogout} initialTab={initialTab} />
+        )}
+      </div>
+    </RoomProvider>
   );
 }
 
