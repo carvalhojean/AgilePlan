@@ -6,6 +6,7 @@ import {
   Paper,
   TextField,
   Alert,
+  Snackbar,
 } from "@mui/material";
 import { useState } from "react";
 import { useRoom } from "../contexts/RoomContext";
@@ -13,6 +14,7 @@ import { useRoom } from "../contexts/RoomContext";
 const LoginForm = ({ onLogin }) => {
   const [roomCode, setRoomCode] = useState("");
   const [error, setError] = useState("");
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const { joinRoom } = useRoom();
 
@@ -35,7 +37,10 @@ const LoginForm = ({ onLogin }) => {
           };
           joinRoom(roomCode.trim(), participant);
           setError("");
-          onLogin();
+          setShowSuccess(true);
+          setTimeout(() => {
+            onLogin("planning-poker");
+          }, 1500);
         } else {
           setError("This room does not exist.");
         }
@@ -141,6 +146,15 @@ const LoginForm = ({ onLogin }) => {
           </Box>
         </Paper>
       </Box>
+      <Snackbar
+        open={showSuccess}
+        autoHideDuration={1500}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="success" sx={{ width: '100%' }}>
+          Room found! Joining...
+        </Alert>
+      </Snackbar>
     </Container>
   );
 };
