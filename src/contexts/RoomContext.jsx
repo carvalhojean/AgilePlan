@@ -1,6 +1,15 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { io } from "socket.io-client";
 
 const RoomContext = createContext();
+const socket = io("http://localhost:3001", {
+  reconnection: true,
+  reconnectionAttempts: 5,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  timeout: 20000,
+  transports: ["websocket", "polling"],
+});
 
 export const useRoom = () => {
   const context = useContext(RoomContext);
@@ -30,65 +39,122 @@ export const RoomProvider = ({ children }) => {
 
   const joinRoom = (code, participant) => {
     if (room?.code === code) {
-      setParticipants((prev) => [...prev, participant]);
+      socket.emit('join_room', { roomCode: code, participant });
       return true;
     }
     return false;
   };
 
   const leaveRoom = (participantId) => {
-    setParticipants((prev) => prev.filter((p) => p.id !== participantId));
-    setVotes((prev) => {
-      const newVotes = { ...prev };
-      delete newVotes[participantId];
-      return newVotes;
-    });
+    if (room) {
+      socket.emit('leave_room', { roomCode: room.code, participantId });
+      setParticipants((prev) => prev.filter((p) => p.id !== participantId));
+      setDevVotes((prev) => {
+        const newVotes = { ...prev };
+        delete newVotes[participantId];
+        return newVotes;
+      });
+      setQaVotes((prev) => {
+        const newVotes = { ...prev };
+        delete newVotes[participantId];
+        return newVotes;
+      });
+    }
   };
 
   const submitVote = (participantId, value, type = "dev") => {
-    if (type === "dev") {
-      setDevVotes((prev) => ({
-        ...prev,
-        [participantId]: value,
-      }));
-    } else if (type === "qa") {
-      setQaVotes((prev) => ({
-        ...prev,
-        [participantId]: value,
-      }));
+    if (room) {
+      socket.emit('submit_vote', { roomCode: room.code, participantId, value, type });
+      if (type === "dev") {
+        setDevVotes((prev) => ({
+          ...prev,
+          [participantId]: value,
+        }));
+      } else if (type === "qa") {
+        setQaVotes((prev) => ({
+          ...prev,
+          [participantId]: value,
+        }));
+      }
     }
   };
 
   const revealVotes = (type = "dev") => {
-    if (type === "dev") {
-      setIsDevRevealed(true);
-    } else if (type === "qa") {
-      setIsQaRevealed(true);
+    if (room) {
+      socket.emit('reveal_votes', { roomCode: room.code, type });
+      if (type === "dev") {
+        setIsDevRevealed(true);
+      } else if (type === "qa") {
+        setIsQaRevealed(true);
+      }
     }
   };
 
   const resetVotes = (type = "dev") => {
-    if (type === "dev") {
-      setDevVotes({});
-      setIsDevRevealed(false);
-    } else if (type === "qa") {
-      setQaVotes({});
-      setIsQaRevealed(false);
+    if (room) {
+      socket.emit('reset_votes', { roomCode: room.code, type });
+      if (type === "dev") {
+        setDevVotes({});
+        setIsDevRevealed(false);
+      } else if (type === "qa") {
+        setQaVotes({});
+        setIsQaRevealed(false);
+      }
     }
   };
 
   const closeRoom = () => {
     setRoom(null);
     setParticipants([]);
-    setVotes({});
-    setIsRevealed(false);
+    setDevVotes({});
+    setQaVotes({});
+    setIsDevRevealed(false);
+    setIsQaRevealed(false);
   };
 
   useEffect(() => {
-    if (participants.length === 0 && room) {
-      closeRoom();
-    }
-  }, [participants]);
+    socket.on("participant_joined", (participant) => {
+      setParticipants((prev) => [...prev, participant]);
+    });
+
+    socket.on("participant_left", (participantId) => {
+      setParticipants((prev) => prev.filter((p) => p.id !== participantId));
+    });
+
+    socket.on("vote_submitted", ({ participantId, value, type }) => {
+      if (type === "dev") {
+        setDevVotes((prev) => ({ ...prev, [participantId]: value }));
+      } else if (type === "qa") {
+        setQaVotes((prev) => ({ ...prev, [participantId]: value }));
+      }
+    });
+
+    socket.on("votes_revealed", (type) => {
+      if (type === "dev") {
+        setIsDevRevealed(true);
+      } else if (type === "qa") {
+        setIsQaRevealed(true);
+      }
+    });
+
+    socket.on("votes_reset", (type) => {
+      if (type === "dev") {
+        setDevVotes({});
+        setIsDevRevealed(false);
+      } else if (type === "qa") {
+        setQaVotes({});
+        setIsQaRevealed(false);
+      }
+    });
+
+    return () => {
+      socket.off("participant_joined");
+      socket.off("participant_left");
+      socket.off("vote_submitted");
+      socket.off("votes_revealed");
+      socket.off("votes_reset");
+    };
+  }, []);
 
   const value = {
     room,
